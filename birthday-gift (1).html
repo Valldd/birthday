@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎁 You Have a Gift!</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --pink: #ff8caa;
+  --pink-dark: #e85d8a;
+  --pink-light: #ffb3c6;
+  --blue-bg: #a8d8ea;
+  --tan-bg: #e8c99a;
+  --purple-bg: #9b8ec4;
+  --white: #fff;
+  --black: #1a1018;
+  --pixel: 4px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #2a1a2e;
+  background-image: radial-gradient(circle at 30% 50%, #3d1f4a 0%, #1a0d22 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: 'Press Start 2P', monospace;
+  image-rendering: pixelated;
+}
+
+/* ── OS WINDOW ── */
+.os-window {
+  width: 420px;
+  border: 4px solid #fff;
+  border-bottom: 4px solid #fff;
+  box-shadow: 6px 6px 0 #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.os-titlebar {
+  height: 34px;
+  background: var(--pink-dark);
+  border-bottom: 4px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+
+.os-btn {
+  width: 26px; height: 26px;
+  background: var(--pink-light);
+  border: 3px solid #000;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #000;
+  user-select: none;
+}
+.os-btn:hover { background: #fff; }
+.os-btn:active { transform: translate(2px,2px); }
+.os-btns { display: flex; gap: 5px; }
+
+/* ── SCENE BASE ── */
+.scene {
+  display: none;
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 18px 18px;
+}
+.scene.active { display: flex; }
+
+/* scene backgrounds */
+.scene-pink    { background: #ff9fb5; }
+.scene-blue    { background: #a8d8ea; }
+.scene-tan     { background: #dfc08a; }
+.scene-purple  { background: #9b8ec4; }
+.scene-start   { background: #ffc8d8; }
+
+/* ── PIXEL CLOUDS ── */
+.clouds { position: absolute; inset: 0; pointer-events: none; }
+.cloud {
+  position: absolute;
+  image-rendering: pixelated;
+}
+
+/* ── PIXEL TEXT ── */
+.px-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  line-height: 2;
+  color: #2a1020;
+  text-align: center;
+  z-index: 2;
+  margin-bottom: 10px;
+  white-space: pre-line;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+}
+.px-sub {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #5a3050;
+  text-align: center;
+  z-index: 2;
+  margin-bottom: 10px;
+  animation: fadeIn .4s steps(3) both;
+  line-height: 1.8;
+}
+.px-white { color: #fff; text-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
+
+/* ── PIXEL BUTTON ── */
+.px-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  background: #fff;
+  color: #2a1020;
+  border: 3px solid #2a1020;
+  padding: 9px 18px;
+  border-radius: 99px;
+  box-shadow: 3px 3px 0 #2a1020;
+  cursor: pointer;
+  z-index: 5;
+  transition: none;
+  user-select: none;
+}
+.px-btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #2a1020; }
+.px-btn:active { transform: translate(3px,3px); box-shadow: none; }
+.px-btn.magenta { background: #e8409a; color: #fff; border-color: #8a1050; box-shadow: 3px 3px 0 #8a1050; }
+.px-btn.blue-btn { background: #5090e0; color: #fff; border-color: #204080; box-shadow: 3px 3px 0 #204080; }
+
+/* ── INPUT ── */
+.px-input {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  border: 3px solid #2a1020;
+  padding: 8px 12px;
+  background: #fff;
+  color: #2a1020;
+  box-shadow: 3px 3px 0 #2a1020;
+  outline: none;
+  width: 200px;
+  text-align: center;
+  margin-bottom: 14px;
+  z-index: 2;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes wobble { 0%,100%{transform:rotate(0)} 30%{transform:rotate(-10deg)} 70%{transform:rotate(10deg)} }
+@keyframes pop    { 0%{transform:scale(.6)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
+@keyframes blink  { 0%,100%{transform:scaleY(1)} 45%,55%{transform:scaleY(.05)} }
+
+/* ── BALLOONS ── */
+.balloon-wrap { position:absolute; bottom:0; display:flex; flex-direction:column; align-items:center; }
+.balloon-shape {
+  width:30px; height:40px;
+  border-radius:50% 50% 50% 50%/55% 55% 45% 45%;
+  animation: balloonFloat 3.5s ease-in-out infinite;
+}
+.balloon-string { width:2px; height:20px; background:#555; }
+@keyframes balloonFloat { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg) translateY(-8px)} }
+
+/* ── WALKER ── */
+.walker-wrap {
+  position: absolute;
+  bottom: 55px;
+  left: -140px;
+  z-index: 6;
+  animation: walkRight 5s linear forwards;
+}
+@keyframes walkRight { 0%{left:-140px} 100%{left:calc(100% + 20px)} }
+@keyframes legA { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes legB { 0%,100%{transform:translateY(-6px)} 50%{transform:translateY(0)} }
+
+/* ── CONFETTI ── */
+.confetti-piece {
+  position: absolute;
+  top: -10px;
+  width: 8px; height: 8px;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0deg); opacity:1; }
+  100% { transform: translateY(480px) rotate(540deg); opacity:0; }
+}
+
+/* ── STAR BURST ── */
+.starburst {
+  position: absolute;
+  width: 8px; height: 8px;
+  pointer-events: none;
+  z-index: 99;
+  animation: starFly .7s steps(4) forwards;
+}
+@keyframes starFly {
+  0%   { transform: translate(0,0) scale(1); opacity:1; }
+  100% { transform: translate(var(--dx),var(--dy)) scale(0); opacity:0; }
+}
+
+/* ── SCENE 6 "from/to" layout ── */
+.from-to-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 2;
+  width: 100%;
+}
+.char-col { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.char-label { font-family:'Press Start 2P',monospace; font-size:9px; color:#fff; text-align:center; line-height:1.9; text-shadow:2px 2px 0 rgba(0,0,0,.35); }
+.msg-box {
+  font-family:'Press Start 2P',monospace; font-size:7.5px;
+  color:#fff; line-height:2.2;
+  background:rgba(255,255,255,.18);
+  border:2px solid rgba(255,255,255,.5);
+  padding:10px 12px; width:100%;
+  z-index:2; margin-top:10px; white-space:pre-line;
+}
+
+/* glow pulse on final scene */
+@keyframes glowPulse { 0%,100%{text-shadow:0 0 8px #ffd700,2px 2px 0 rgba(0,0,0,.2)} 50%{text-shadow:0 0 20px #ffd700,2px 2px 0 rgba(0,0,0,.2)} }
+.glow { animation: glowPulse 2s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<div class="os-window" id="win">
+
+  <!-- TITLE BAR -->
+  <div class="os-titlebar">
+    <div class="os-btns">
+      <button class="os-btn" onclick="prevScene()">←</button>
+    </div>
+    <div class="os-btns">
+      <button class="os-btn">−</button>
+      <button class="os-btn" onclick="win.style.display='none'">×</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCENE 0 — Name input
+  ══════════════════════════════════════════ -->
+  <div class="scene scene-start active" id="s0">
+    <!-- clouds -->
+    <div class="clouds">
+      <svg style="position:absolute;top:14px;left:12px" width="110" height="52" viewBox="0 0 110 52">
+        <rect x="8"  y="24" width="94" height="22" fill="#fff"/>
+        <rect x="20" y="10" width="26" height="22" fill="#fff"/>
+        <rect x="46" y="4"  width="36" height="28" fill="#fff"/>
+      </svg>
+      <svg style="position:absolute;bottom:70px;right:10px;animation:cloudFloat 7s ease-in-out infinite;" width="90" height="44" viewBox="0 0 90 44">
+        <rect x="4"  y="18" width="82" height="20" fill="#fff"/>
+        <rect x="16" y="7"  width="22" height="18" fill="#fff"/>
+        <rect x="36" y="2"  width="28" height="22" fill="#fff"/>
+      </svg>
+    </div>
+    <!-- shiba sprite -->
+    <svg width="90" height="90" viewBox="0 0 18 18" style="z-index:2;margin-bottom:10px;animation:bounce 1.1s steps(2) infinite;">
+      <!-- body -->
+      <rect x="3"  y="9"  width="12" height="8" fill="#c8793c"/>
+      <!-- head -->
+      <rect x="4"  y="4"  width="10" height="7" fill="#c8793c"/>
+      <!-- ears -->
+      <rect x="4"  y="2"  width="3"  height="4" fill="#c8793c"/>
+      <rect x="11" y="2"  width="3"  height="4" fill="#c8793c"/>
+      <!-- muzzle -->
+      <rect x="5"  y="7"  width="8"  height="4" fill="#f0c890"/>
+      <!-- eyes -->
+      <rect x="6"  y="6"  width="2"  height="2" fill="#1a0a10"/>
+      <rect x="10" y="6"  width="2"  height="2" fill="#1a0a10"/>
+      <rect x="6"  y="6"  width="1"  height="1" fill="#fff" opacity=".6"/>
+      <rect x="10" y="6"  width="1"  height="1" fill="#fff" opacity=".6"/>
+      <!-- nose -->
+      <rect x="8"  y="8"  width="2"  height="1" fill="#d4506a"/>
+      <!-- blush -->
+      <rect x="5"  y="9"  width="2"  height="1" fill="#ffb3c1" opacity=".8"/>
+      <rect x="11" y="9"  width="2"  height="1" fill="#ffb3c1" opacity=".8"/>
+      <!-- tail -->
+      <rect x="14" y="8"  width="3"  height="3" fill="#c8793c"/>
+      <rect x="15" y="6"  width="2"  height="3" fill="#c8793c"/>
+      <!-- legs -->
+      <rect x="4"  y="16" width="3"  height="2" fill="#c8793c"/>
+      <rect x="11" y="16" width="3"  height="2" fill="#c8793c"/>
+    </svg>
+    <p class="px-title" style="font-size:12px;">who is this<br/>gift for?</p>
+    <input class="px-input" id="nameInput" type="text" placeholder="your name..." maxlength="12"/>
+    <button class="px-btn magenta" onclick="startGift()">let's go! →</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCENE 1 — "You have a GIFT!"
+  ══════════════════════════════════════════ -->
+  <div class="scene scene-pink" id="s1">
+    <div class="clouds">
+      <svg style="position:absolute;top:14px;left:10px;animation:cloudFloat 6s ease-in-out infinite;" width="120" height="58" viewBox="0 0 120 58">
+        <rect x="8"  y="28" width="104" height="24" fill="#fff"/>
+        <rect x="22" y="12" width="28"  height="24" fill="#fff"/>
+        <rect x="50" y="4"  width="38"  height="30" fill="#fff"/>
+        <rect x="8"  y="28" width="104" height="24" fill="none" stroke="#ffb3c6" stroke-width="3"/>
+        <rect x="22" y="12" width="28"  height="24" fill="none" stroke="#ffb3c6" stroke-width="3"/>
+        <rect x="50" y="4"  width="38"  height="30" fill="none" stroke="#ffb3c6" stroke-width="3"/>
+      </svg>
+      <svg style="position:absolute;bottom:90px;right:8px;animation:cloudFloat 8s -3s ease-in-out infinite;" width="96" height="48" viewBox="0 0 96 48">
+        <rect x="4"  y="20" width="88" height="22" fill="#fff"/>
+        <rect x="18" y="8"  width="24" height="20" fill="#fff"/>
+        <rect x="40" y="2"  width="30" height="24" fill="#fff"/>
+        <rect x="4"  y="20" width="88" height="22" fill="none" stroke="#ffb3c6" stroke-width="3"/>
+      </svg>
+    </div>
+<p class="px-title">You have a<br/>GIFT !</p>
+    <!-- animation -->
+    <img src="14.gif" width="120" height="120" style="z-index:2;margin:14px 0;animation:bounce 1.1s steps(2) infinite;"/>
+    <button class="px-btn" onclick="go(2)">open gift ?</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCENE 2 — Opening gift
+  ══════════════════════════════════════════ -->
+  <div class="scene scene-pink" id="s2">
+    <div class="clouds">
+      <svg style="position:absolute;top:14px;left:10px;animation:cloudFloat 6s ease-in-out infinite;" width="120" height="58" viewBox="0 0 120 58">
+        <rect x="8" y="28" width="104" height="24" fill="#fff"/>
+        <rect x="22" y="12" width="28" height="24" fill="#fff"/>
+        <rect x="50" y="4" width="38" height="30" fill="#fff"/>
+        <rect x="8" y="28" width="104" height="24" fill="none" stroke="#ffb3c6" stroke-width="3"/>
+      </svg>
+      <svg style="position:absolute;bottom:90px;right:8px;animation:cloudFloat 8s -3s ease-in-out infinite;" width="96" height="48" viewBox="0 0 96 48">
+        <rect x="4" y="20" width="88" height="22" fill="#fff"/>
+        <rect x="18" y="8" width="24" height="20" fill="#fff"/>
+        <rect x="40" y="2" width="30" height="24" fill="#fff"/>
+        <rect x="4" y="20" width="88" height="22" fill="none" stroke="#ffb3c6" stroke-width="3"/>
+      </svg>
+    </div>
+    <p class="px-title">You have a<br/>GIFT !</p>
+    <p class="px-sub">opening gift...</p>
+    <!-- Gift box animated -->
+    <svg id="giftSvg" width="108" height="108" viewBox="0 0 22 22" style="z-index:2;margin:4px 0;animation:wobble .45s steps(3) infinite;">
+      <!-- box body -->
+      <rect x="2"  y="10" width="18" height="11" fill="#5878d8"/>
+      <rect x="2"  y="10" width="18" height="11" fill="none" stroke="#2030a0" stroke-width=".6"/>
+      <!-- box lid -->
+      <rect x="1"  y="7"  width="20" height="4"  fill="#4060c0"/>
+      <rect x="1"  y="7"  width="20" height="4"  fill="none" stroke="#2030a0" stroke-width=".6"/>
+      <!-- ribbon vertical -->
+      <rect x="10" y="7"  width="2"  height="14" fill="#e82090"/>
+      <!-- ribbon horizontal -->
+      <rect x="2"  y="11" width="18" height="2"  fill="#e82090"/>
+      <!-- bow left petal -->
+      <rect x="3"  y="3"  width="7"  height="6"  fill="#ff50b0" rx="3"/>
+      <!-- bow right petal -->
+      <rect x="12" y="3"  width="7"  height="6"  fill="#ff50b0" rx="3"/>
+      <!-- bow knot -->
+      <rect x="9"  y="5"  width="4"  height="4"  fill="#e82090"/>
+      <!-- sparkles -->
+      <rect x="0"  y="1"  width="2"  height="2"  fill="#ffd700"/>
+      <rect x="19" y="0"  width="3"  height="3"  fill="#ffd700"/>
+      <rect x="20" y="5"  width="1"  height="1"  fill="#fff"/>
+    </svg>
+    <button class="px-btn" onclick="go(3)">check it out !</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCENE 3 — Happy Birthday + Cinnamoroll
+  ══════════════════════════════════════════ -->
+  <div class="scene scene-blue" id="s3">
+    <!-- balloons -->
+    <div class="balloon-wrap" style="left:16px;">
+      <div class="balloon-shape" style="background:#4ecdc4;animation-delay:0s"></div>
+      <div class="balloon-string"></div>
+    </div>
+    <div class="balloon-wrap" style="left:56px;">
+      <div class="balloon-shape" style="background:#ff9dba;animation-delay:-.8s"></div>
+      <div class="balloon-string"></div>
+    </div>
+    <div class="balloon-wrap" style="right:56px;">
+      <div class="balloon-shape" style="background:#a8e063;animation-delay:-.4s"></div>
+      <div class="balloon-string"></div>
+    </div>
+    <div class="balloon-wrap" style="right:16px;">
+      <div class="balloon-shape" style="background:#c77dff;animation-delay:-1.2s"></div>
+      <div class="balloon-string"></div>
+    </div>
+
+    <p class="px-title" id="bdMsg" style="font-size:13px;color:#1a3060;text-shadow:none;"></p>
+
+    <!-- Cinnamoroll / cute bunny -->
+    <svg width="110" height="110" viewBox="0 0 22 22" style="z-index:2;margin:6px 0;animation:bounce 1.3s steps(2) infinite;">
+      <!-- ears -->
+      <rect x="3"  y="0"  width="4"  height="9"  fill="#e8f4ff"/>
+      <rect x="15" y="0"  width="4"  height="9"  fill="#e8f4ff"/>
+      <rect x="3"  y="0"  width="4"  height="9"  fill="none" stroke="#b0d8ff" stroke-width=".6"/>
+      <rect x="15" y="0"  width="4"  height="9"  fill="none" stroke="#b0d8ff" stroke-width=".6"/>
+      <!-- inner ear -->
+      <rect x="4"  y="1"  width="2"  height="7"  fill="#b8dcff"/>
+      <rect x="16" y="1"  width="2"  height="7"  fill="#b8dcff"/>
+      <!-- body -->
+      <rect x="4"  y="13" width="14" height="8"  fill="#e8f4ff"/>
+      <rect x="4"  y="13" width="14" height="8"  fill="none" stroke="#b0d8ff" stroke-width=".5"/>
+      <!-- head -->
+      <rect x="2"  y="6"  width="18" height="10" fill="#e8f4ff"/>
+      <rect x="2"  y="6"  width="18" height="10" fill="none" stroke="#b0d8ff" stroke-width=".5"/>
+      <!-- eyes -->
+      <rect x="6"  y="8"  width="3"  height="3"  fill="#4898f0"/>
+      <rect x="13" y="8"  width="3"  height="3"  fill="#4898f0"/>
+      <rect x="6"  y="8"  width="2"  height="2"  fill="#1040a0"/>
+      <rect x="13" y="8"  width="2"  height="2"  fill="#1040a0"/>
+      <rect x="6"  y="8"  width="1"  height="1"  fill="#fff" opacity=".8"/>
+      <rect x="13" y="8"  width="1"  height="1"  fill="#fff" opacity=".8"/>
+      <!-- blush -->
+      <rect x="4"  y="12" width="3"  height="1"  fill="#ffb3d1" opacity=".8"/>
+      <rect x="15" y="12" width="3"  height="1"  fill="#ffb3d1" opacity=".8"/>
+      <!-- tiny nose -->
+      <rect x="10" y="11" width="2"  height="1"  fill="#ffb3d1"/>
+      <!-- heart on chest -->
+      <rect x="10" y="15" width="2"  height="2"  fill="#ff80b0"/>
+      <rect x="9"  y="14" width="2"  height="2"  fill="#ff80b0"/>
+      <rect x="11" y="14" width="2"  height="2"  fill="#ff80b0"/>
+      <!-- tail -->
+      <rect x="18" y="15" width="3"  height="3"  fill="#e8f4ff"/>
+    </svg>
+
+    <div style="display:flex;gap:10px;z-index:2;font-size:18px;animation:bounce .8s steps(2) infinite;">❤️ 🎂 ❤️</div>
+    <button class="px-btn" onclick="go(4)" style="margin-top:12px;">next...</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCENE 4 — Blue Snoopy walks across
+  ══════════════════════════════════════════ -->
+  <div class="scene scene-tan" id="s4">
+    <p class="px-title" style="font-size:11px;color:#4a2800;align-self:flex-start;padding-left:6px;line-height:2.2;">huh? what's this?<br/><br/>looks like<br/>snoopy has a<br/>message !</p>
+
+    <!-- BLUE SNOOPY WALKER — detailed pixel art -->
+    <div class="walker-wrap" id="walker">
+      <svg width="100" height="100" viewBox="0 0 25 25">
+        <!-- ---- SUNFLOWER ---- -->
+        <!-- stem -->
+        <rect x="2"  y="15" width="2" height="10" fill="#3d7a1a"/>
+        <!-- leaf -->
+        <rect x="0"  y="17" width="3" height="2"  fill="#4a9020"/>
+        <!-- petals (8) -->
+        <rect x="0"  y="5"  width="3" height="4"  fill="#ffd700"/>
+        <rect x="6"  y="5"  width="3" height="4"  fill="#ffd700"/>
+        <rect x="0"  y="9"  width="3" height="4"  fill="#ffd700"/>
+        <rect x="6"  y="9"  width="3" height="4"  fill="#ffd700"/>
+        <rect x="1"  y="3"  width="3" height="3"  fill="#ffd700"/>
+        <rect x="5"  y="3"  width="3" height="3"  fill="#ffd700"/>
+        <rect x="1"  y="12" width="3" height="3"  fill="#ffd700"/>
+        <rect x="5"  y="12" width="3" height="3"  fill="#ffd700"/>
+        <!-- center -->
+        <rect x="1"  y="5"  width="7" height="8"  fill="#c87830"/>
+        <rect x="2"  y="6"  width="5" height="6"  fill="#a86020"/>
+        <!-- seeds -->
+        <rect x="2"  y="6"  width="2" height="2"  fill="#c87830"/>
+        <rect x="5"  y="6"  width="2" height="2"  fill="#c87830"/>
+        <rect x="3"  y="8"  width="2" height="2"  fill="#c87830"/>
+        <rect x="2"  y="10" width="2" height="2"  fill="#c87830"/>
+        <rect x="5"  y="10" width="2" height="2"  fill="#c87830"/>
+
+        <!-- ---- BLUE SNOOPY ---- -->
+        <!-- body -->
+        <rect x="10" y="13" width="12" height="10" fill="#58c8ff"/>
+        <!-- floppy ear (dark blue) -->
+        <rect x="10" y="5"  width="5"  height="9"  fill="#2a90e0"/>
+        <!-- head -->
+        <rect x="11" y="5"  width="11" height="9"  fill="#58c8ff"/>
+        <!-- snout (lighter) -->
+        <rect x="19" y="9"  width="6"  height="4"  fill="#90dcff"/>
+        <!-- eye -->
+        <rect x="16" y="7"  width="2"  height="2"  fill="#111"/>
+        <rect x="16" y="7"  width="1"  height="1"  fill="#fff" opacity=".7"/>
+        <!-- nose -->
+        <rect x="24" y="9"  width="1"  height="1"  fill="#111"/>
+        <!-- tail (curly up) -->
+        <rect x="22" y="11" width="3"  height="2"  fill="#58c8ff"/>
+        <rect x="24" y="9"  width="2"  height="4"  fill="#58c8ff"/>
+        <!-- legs (walking alternates via JS) -->
+        <rect id="wleg1" x="11" y="22" width="3"  height="4"  fill="#58c8ff"/>
+        <rect id="wleg2" x="16" y="22" width="3"  height="4"  fill="#58c8ff"/>
+      </svg>
+    </div>
+
+    <!-- Large decorative sunflower bottom-right -->
+    <svg width="100" height="100" viewBox="0 0 20 20" style="position:absolute;bottom:20px;right:14px;z-index:2;">
+      <rect x="8"  y="12" width="3"  height="8"  fill="#3d7a1a"/>
+      <rect x="5"  y="15" width="4"  height="2"  fill="#4a9020"/>
+      <rect x="11" y="16" width="4"  height="2"  fill="#4a9020"/>
+      <!-- petals -->
+      <rect x="6"  y="1"  width="3"  height="4"  fill="#ffd700"/>
+      <rect x="11" y="1"  width="3"  height="4"  fill="#ffd700"/>
+      <rect x="1"  y="6"  width="4"  height="3"  fill="#ffd700"/>
+      <rect x="15" y="6"  width="4"  height="3"  fill="#ffd700"/>
+      <rect x="1"  y="10" width="4"  height="3"  fill="#ffd700"/>
+      <rect x="15" y="10" width="4"  height="3"  fill="#ffd700"/>
+      <rect x="6"  y="13" width="3"  height="4"  fill="#ffd700"/>
+      <rect x="11" y="13" width="3"  height="4"  fill="#ffd700"/>
+      <rect x="2"  y="3"  width="3"  height="3"  fill="#ffd700"/>
+      <rect x="15" y="3"  width="3"  height="3"  fill="#ffd700"/>
+      <rect x="2"  y="13" width="3"  height="3"  fill="#ffd700"/>
+      <rect x="15" y="13" width="3"  height="3"  fill="#ffd700"/>
+      <!-- center -->
+      <rect x="5"  y="4"  width="10" height="10" fill="#c87830"/>
+      <rect x="6"  y="5"  width="8"  height="8"  fill="#a86020"/>
+      <rect x="6"  y="5"  width="3"  height="3"  fill="#c87830"/>
+      <rect x="11" y="5"  width="3"  height="3"  fill="#c87830"/>
+      <rect x="8"  y="8"  width="3"  height="3"  fill="#c87830"/>
+      <rect x="6"  y="11" width="3"  height="2"  fill="#c87830"/>
+      <rect x="11" y="11" width="3"  height="2"  fill="#c87830"/>
+    </svg>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCENE 5 — "you have a gift again"
+  ══════════════════════════════════════════ -->
+  <div class="scene scene-tan" id="s5">
+    <p class="px-title" style="font-size:10px;color:#4a2800;line-height:2.2;">hmm... it seems<br/>like you have a<br/>gift again</p>
+    <p class="px-sub" style="color:#7a4820;">opening gift...</p>
+    <svg width="108" height="108" viewBox="0 0 22 22" style="z-index:2;margin:8px 0;animation:wobble .4s steps(3) infinite;">
+      <rect x="2"  y="10" width="18" height="11" fill="#5878d8"/>
+      <rect x="1"  y="7"  width="20" height="4"  fill="#4060c0"/>
+      <rect x="10" y="7"  width="2"  height="14" fill="#e82090"/>
+      <rect x="2"  y="11" width="18" height="2"  fill="#e82090"/>
+      <rect x="3"  y="3"  width="7"  height="6"  fill="#ff50b0" rx="3"/>
+      <rect x="12" y="3"  width="7"  height="6"  fill="#ff50b0" rx="3"/>
+      <rect x="9"  y="5"  width="4"  height="4"  fill="#e82090"/>
+    </svg>
+    <button class="px-btn magenta" onclick="go(6)">find out..!</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCENE 6 — From me… to you (purple)
+  ══════════════════════════════════════════ -->
+  <div class="scene scene-purple" id="s6">
+    <div class="from-to-row">
+
+      <!-- LEFT: frog hoodie character -->
+      <div class="char-col">
+        <p class="char-label">from me...</p>
+        <svg width="120" height="120" viewBox="0 0 24 24" style="animation:bounce 1.4s steps(2) infinite;">
+          <!-- hoodie body green -->
+          <rect x="4"  y="13" width="16" height="10" fill="#5cc85c"/>
+          <rect x="4"  y="13" width="16" height="10" fill="none" stroke="#2a6020" stroke-width=".5"/>
+          <!-- pocket -->
+          <rect x="8"  y="18" width="8"  height="4"  fill="#4aaa4a"/>
+          <!-- arms -->
+          <rect x="0"  y="14" width="5"  height="6"  fill="#5cc85c"/>
+          <rect x="19" y="14" width="5"  height="6"  fill="#5cc85c"/>
+          <!-- white glove hands -->
+          <rect x="0"  y="18" width="4"  height="3"  fill="#ddeec8"/>
+          <rect x="20" y="18" width="4"  height="3"  fill="#ddeec8"/>
+          <!-- frog hood bumps -->
+          <rect x="4"  y="2"  width="5"  height="5"  fill="#4aaa4a"/>
+          <rect x="15" y="2"  width="5"  height="5"  fill="#4aaa4a"/>
+          <rect x="5"  y="0"  width="3"  height="4"  fill="#5cc85c"/>
+          <rect x="16" y="0"  width="3"  height="4"  fill="#5cc85c"/>
+          <!-- frog eye bumps -->
+          <rect x="5"  y="1"  width="2"  height="2"  fill="#80e040"/>
+          <rect x="17" y="1"  width="2"  height="2"  fill="#80e040"/>
+          <!-- dark face -->
+          <rect x="5"  y="5"  width="14" height="10" fill="#181018"/>
+          <!-- white face patch -->
+          <rect x="7"  y="8"  width="10" height="6"  fill="#eeeedd"/>
+          <!-- eyes -->
+          <rect x="8"  y="8"  width="3"  height="3"  fill="#fff"/>
+          <rect x="13" y="8"  width="3"  height="3"  fill="#fff"/>
+          <rect x="9"  y="9"  width="2"  height="2"  fill="#111"/>
+          <rect x="14" y="9"  width="2"  height="2"  fill="#111"/>
+          <rect x="9"  y="9"  width="1"  height="1"  fill="#fff" opacity=".7"/>
+          <rect x="14" y="9"  width="1"  height="1"  fill="#fff" opacity=".7"/>
+          <!-- blush -->
+          <rect x="7"  y="11" width="2"  height="1"  fill="#ffaacc" opacity=".9"/>
+          <rect x="15" y="11" width="2"  height="1"  fill="#ffaacc" opacity=".9"/>
+          <!-- smile -->
+          <rect x="10" y="13" width="4"  height="1"  fill="#333"/>
+          <!-- feet -->
+          <rect x="5"  y="22" width="5"  height="2"  fill="#4aaa4a"/>
+          <rect x="14" y="22" width="5"  height="2"  fill="#4aaa4a"/>
+        </svg>
+      </div>
+
+      <!-- RIGHT: pink bunny (penguin in costume) -->
+      <div class="char-col">
+        <p class="char-label">...to you,<br/><span id="toNameLabel" style="color:#ffd700;"></span></p>
+        <svg width="120" height="120" viewBox="0 0 24 24" style="animation:bounce 1.4s steps(2) -0.7s infinite;">
+          <!-- bunny ears -->
+          <rect x="5"  y="0"  width="4"  height="10" fill="#f4a0b8"/>
+          <rect x="15" y="0"  width="4"  height="10" fill="#f4a0b8"/>
+          <rect x="5"  y="0"  width="4"  height="10" fill="none" stroke="#c87090" stroke-width=".5"/>
+          <rect x="15" y="0"  width="4"  height="10" fill="none" stroke="#c87090" stroke-width=".5"/>
+          <rect x="6"  y="1"  width="2"  height="8"  fill="#ffbcd0"/>
+          <rect x="16" y="1"  width="2"  height="8"  fill="#ffbcd0"/>
+          <!-- pink costume body -->
+          <rect x="3"  y="13" width="18" height="10" fill="#f4a0b8"/>
+          <rect x="3"  y="13" width="18" height="10" fill="none" stroke="#c87090" stroke-width=".5"/>
+          <!-- belly patch -->
+          <rect x="7"  y="15" width="10" height="6"  fill="#ffccd8"/>
+          <!-- wings/arms -->
+          <rect x="0"  y="14" width="4"  height="6"  fill="#f4a0b8"/>
+          <rect x="20" y="14" width="4"  height="6"  fill="#f4a0b8"/>
+          <!-- dark penguin head -->
+          <rect x="5"  y="4"  width="14" height="11" fill="#181018"/>
+          <!-- white face -->
+          <rect x="7"  y="7"  width="10" height="7"  fill="#eeeedd"/>
+          <!-- eyes -->
+          <rect x="8"  y="8"  width="3"  height="3"  fill="#fff"/>
+          <rect x="13" y="8"  width="3"  height="3"  fill="#fff"/>
+          <rect x="9"  y="9"  width="2"  height="2"  fill="#111"/>
+          <rect x="14" y="9"  width="2"  height="2"  fill="#111"/>
+          <rect x="9"  y="9"  width="1"  height="1"  fill="#fff" opacity=".7"/>
+          <rect x="14" y="9"  width="1"  height="1"  fill="#fff" opacity=".7"/>
+          <!-- beak -->
+          <rect x="10" y="12" width="4"  height="2"  fill="#ffd040"/>
+          <!-- blush -->
+          <rect x="7"  y="11" width="2"  height="1"  fill="#ffaacc" opacity=".9"/>
+          <rect x="15" y="11" width="2"  height="1"  fill="#ffaacc" opacity=".9"/>
+          <!-- feet -->
+          <rect x="7"  y="22" width="4"  height="2"  fill="#ffd040"/>
+          <rect x="13" y="22" width="4"  height="2"  fill="#ffd040"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="msg-box" id="msgBox"></div>
+    <button class="px-btn blue-btn" onclick="go(7)" style="margin-top:10px;">next...</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCENE 7 — Final celebration
+  ══════════════════════════════════════════ -->
+  <div class="scene scene-blue" id="s7">
+    <div class="balloon-wrap" style="left:10px;">
+      <div class="balloon-shape" style="background:#ff9dba;animation-delay:0s"></div>
+      <div class="balloon-string"></div>
+    </div>
+    <div class="balloon-wrap" style="left:50px;">
+      <div class="balloon-shape" style="background:#ffd700;animation-delay:-.6s"></div>
+      <div class="balloon-string"></div>
+    </div>
+    <div class="balloon-wrap" style="right:50px;">
+      <div class="balloon-shape" style="background:#4ecdc4;animation-delay:-.3s"></div>
+      <div class="balloon-string"></div>
+    </div>
+    <div class="balloon-wrap" style="right:10px;">
+      <div class="balloon-shape" style="background:#c77dff;animation-delay:-1s"></div>
+      <div class="balloon-string"></div>
+    </div>
+
+    <div id="confettiBox" style="position:absolute;inset:0;pointer-events:none;z-index:10;overflow:hidden;"></div>
+
+    <p class="px-title glow" id="finalMsg" style="font-size:13px;color:#1a3060;text-shadow:none;"></p>
+
+    <!-- Cinnamoroll again -->
+    <svg width="110" height="110" viewBox="0 0 22 22" style="z-index:2;margin:8px 0;animation:bounce 1.3s steps(2) infinite;">
+      <rect x="3"  y="0"  width="4"  height="9"  fill="#e8f4ff"/>
+      <rect x="15" y="0"  width="4"  height="9"  fill="#e8f4ff"/>
+      <rect x="4"  y="1"  width="2"  height="7"  fill="#b8dcff"/>
+      <rect x="16" y="1"  width="2"  height="7"  fill="#b8dcff"/>
+      <rect x="4"  y="13" width="14" height="8"  fill="#e8f4ff"/>
+      <rect x="2"  y="6"  width="18" height="10" fill="#e8f4ff"/>
+      <rect x="6"  y="8"  width="3"  height="3"  fill="#4898f0"/>
+      <rect x="13" y="8"  width="3"  height="3"  fill="#4898f0"/>
+      <rect x="6"  y="8"  width="2"  height="2"  fill="#1040a0"/>
+      <rect x="13" y="8"  width="2"  height="2"  fill="#1040a0"/>
+      <rect x="6"  y="8"  width="1"  height="1"  fill="#fff" opacity=".8"/>
+      <rect x="13" y="8"  width="1"  height="1"  fill="#fff" opacity=".8"/>
+      <rect x="4"  y="12" width="3"  height="1"  fill="#ffb3d1" opacity=".8"/>
+      <rect x="15" y="12" width="3"  height="1"  fill="#ffb3d1" opacity=".8"/>
+      <rect x="10" y="11" width="2"  height="1"  fill="#ffb3d1"/>
+      <rect x="10" y="15" width="2"  height="2"  fill="#ff80b0"/>
+      <rect x="9"  y="14" width="2"  height="2"  fill="#ff80b0"/>
+      <rect x="11" y="14" width="2"  height="2"  fill="#ff80b0"/>
+      <rect x="18" y="15" width="3"  height="3"  fill="#e8f4ff"/>
+    </svg>
+
+    <div style="display:flex;gap:10px;z-index:2;font-size:22px;">🎉 🎊 🎈</div>
+    <button class="px-btn magenta" onclick="restart()" style="margin-top:14px;font-size:8px;">play again ↺</button>
+  </div>
+
+</div><!-- end .os-window -->
+
+<script>
+let cur = 0;
+let name = '';
+
+const TOTAL = 8;
+
+function startGift() {
+  name = document.getElementById('nameInput').value.trim() || 'you';
+  go(1);
+}
+
+function go(n) {
+  burst();
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+  const t = document.getElementById('s' + n);
+  if (!t) return;
+  t.classList.add('active');
+  cur = n;
+
+  if (n === 3) {
+    document.getElementById('bdMsg').textContent = 'happy birthday,\n' + name + '!';
+  }
+
+  if (n === 4) {
+    // re-clone walker to restart animation
+    const w = document.getElementById('walker');
+    if (w) {
+      const c = w.cloneNode(true);
+      c.id = 'walker';
+      w.parentNode.replaceChild(c, w);
+    }
+    setTimeout(() => { if (cur === 4) go(5); }, 5500);
+  }
+
+  if (n === 6) {
+    document.getElementById('toNameLabel').textContent = name;
+    document.getElementById('msgBox').textContent =
+      'So proud to know you and to be your\nfriend. I hope you have a great year\nahead, filled with love, laughter, and\nall the things that make you happy.\nYou deserve it all! Keep shining\nbright, ' + name + ' \uD83D\uDC9B';
+  }
+
+  if (n === 7) {
+    document.getElementById('finalMsg').textContent = 'happy birthday,\n' + name + '! \uD83C\uDF82';
+    confetti();
+  }
+}
+
+function prevScene() {
+  if (cur > 0) go(cur - 1);
+}
+
+function burst() {
+  const win = document.getElementById('win');
+  const cx = win.offsetWidth / 2;
+  const cy = win.offsetHeight / 2;
+  const cols = ['#ffd700','#ff60b0','#50d0d0','#fff','#a0e040','#c090ff'];
+  for (let i = 0; i < 12; i++) {
+    const el = document.createElement('div');
+    el.className = 'starburst';
+    const a = (i / 12) * Math.PI * 2;
+    const d = 55 + Math.random() * 55;
+    el.style.cssText = `left:${cx}px;top:${cy}px;background:${cols[i%cols.length]};--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px;`;
+    win.appendChild(el);
+    setTimeout(() => el.remove(), 800);
+  }
+}
+
+function confetti() {
+  const box = document.getElementById('confettiBox');
+  box.innerHTML = '';
+  const cols = ['#ffd700','#ff70b8','#50d0d0','#a0e040','#c090ff','#ff9030','#fff'];
+  for (let i = 0; i < 50; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    const sz = 5 + Math.random() * 7;
+    p.style.cssText =
+      `width:${sz}px;height:${sz}px;` +
+      `background:${cols[i % cols.length]};` +
+      `left:${Math.random()*100}%;` +
+      `animation-duration:${1.2 + Math.random()*1.8}s;` +
+      `animation-delay:${Math.random()*1.5}s;`;
+    box.appendChild(p);
+  }
+}
+
+function restart() {
+  name = '';
+  document.getElementById('nameInput').value = '';
+  go(0);
+}
+
+// allow Enter key on input
+document.getElementById('nameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startGift();
+});
+</script>
+</body>
+</html>
