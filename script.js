@@ -1,44 +1,56 @@
-{
-  "photos"; [
-    "1.jpg",
-    "1_nobg.png",
-    "1.png",
-    "2.jpg",
-    "2.png",
-    "3.jpg",
-    "3.png",
-    "4.jpg",
-    "4.png",
-    "5.jpg",
-    "5.png",
-    "6.jpg",
-    "6.png",
-    "7.jpg",
-    "7.png",
-    "8.jpg",
-    "8.png",
-    "9.jpg",
-    "9.png",
-    "10_nobg.png",
-    "10_nobg2.png",
-    "10.jpg",
-    "10.png",
-    "11_nobg.png",
-    "11_nobg2.png",
-    "11.jpg",
-    "11.png",
-    "12.png",
-    "13.gif",
-    "14_nobg.gif",
-    "14.gif",
-    "15_nobg.gif",
-    "15.gif",
-    "91.jpg",
-    "92.jpg",
-    "birth_nobg.png",
-    "birth_nobg2.png",
-    "birth.jpg",
-    "cc.png",
-    "cinnamorol.png",
-  ]
+let cur = 0;
+let name = '';
+
+const DEFAULT_PHOTOS = ['2.jpg'];
+let photoConfig = { photos: DEFAULT_PHOTOS };
+
+async function loadPhotoConfig() {
+  try {
+    const res = await fetch('birthhh.json');
+    const data = await res.json();
+    if (Array.isArray(data.photos)) {
+      photoConfig.photos = data.photos;
+    }
+  } catch (e) {
+    console.log('JSON gagal load, pakai default');
+  }
+}
+
+loadPhotoConfig();
+
+function startGift() {
+  const input = document.getElementById('nameInput');
+  if (!input.value) return alert("Isi dulu!");
+
+  name = input.value;
+  go(1);
+}
+
+function go(n) {
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+  document.getElementById('s' + n).classList.add('active');
+  cur = n;
+
+  if (n === 3) {
+    document.getElementById('bdMsg').textContent =
+      'Happy Birthday!\nSemoga semua harapanmu tercapai!';
+  }
+
+  if (n === 6) {
+    document.getElementById('msgBox').textContent =
+      'Semoga harimu menyenangkan 🎉';
+  }
+
+  if (n === 7) {
+    document.getElementById('finalMsg').textContent =
+      'Happy Birthday ' + name + ' 🎂';
+  }
+}
+
+function prevScene() {
+  if (cur > 0) go(cur - 1);
+}
+
+function restart() {
+  go(0);
 }
