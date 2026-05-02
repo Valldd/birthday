@@ -488,3 +488,7 @@ body {
 .photo-gallery { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
 .photo-gallery img { width: 100px; height: 72px; object-fit: cover; border-radius: 18px; border: 2px solid rgba(255,255,255,0.16); box-shadow: 0 10px 20px rgba(0,0,0,0.24); }
 .final-gallery img { width: calc(50% - 10px); max-width: 140px; }
+
+.px-input {
+  appearance: none;
+}

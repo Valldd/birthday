@@ -1,5 +1,7 @@
+console.log("VERSI BARU 123");
+
 let cur = 0;
-let name = '';
+let birthDate = '';
 
 const DEFAULT_PHOTOS = ['2.jpg'];
 let photoConfig = { photos: DEFAULT_PHOTOS };
@@ -43,7 +45,7 @@ function go(n) {
 
   if (n === 7) {
     document.getElementById('finalMsg').textContent =
-      'Happy Birthday ' + name + ' 🎂';
+      'Happy Birthday ' + birthDate + ' 🎂';
   }
 }
 
